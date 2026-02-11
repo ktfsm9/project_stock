@@ -89,3 +89,10 @@ bash tools/sync_main_branch.sh --source work --push
 ```
 
 또는 GitHub PR 화면에서 `Merge pull request`를 직접 수행하세요.
+
+
+PowerShell(WSL 없이):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\sync_main_branch.ps1 -Source work -Push
+```

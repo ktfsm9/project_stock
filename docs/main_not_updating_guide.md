@@ -67,3 +67,23 @@ git remote -v
 - `Merged` 여부
 - base 브랜치가 `main`인지
 를 꼭 확인하세요.
+
+
+---
+
+## WSL 없이 PowerShell에서 바로 실행
+
+질문처럼 `bash` 실행 시 WSL 미설치 오류가 나면, 아래 PowerShell 스크립트를 사용하세요.
+
+```powershell
+pwsh -File tools/sync_main_branch.ps1 -Source work -Push
+```
+
+Windows PowerShell(5.x)에서는:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\sync_main_branch.ps1 -Source work -Push
+```
+
+- `-Push`를 빼면 로컬 `main`만 갱신
+- `-Source` 생략 시 현재 브랜치를 source로 사용
