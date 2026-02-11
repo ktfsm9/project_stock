@@ -78,3 +78,14 @@ git branch -vv
 
 - `origin`이 `https://github.com/ktfsm9/project_stock.git`를 가리킴
 - 현재 브랜치가 `origin/main`을 tracking
+
+
+## main이 안 올라갈 때
+
+작업 브랜치에서 PR만 열어두면 `main`은 자동으로 갱신되지 않습니다(merge 필요).
+
+```bash
+bash tools/sync_main_branch.sh --source work --push
+```
+
+또는 GitHub PR 화면에서 `Merge pull request`를 직접 수행하세요.
