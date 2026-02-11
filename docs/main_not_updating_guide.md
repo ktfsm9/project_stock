@@ -73,16 +73,31 @@ git remote -v
 
 ## WSL 없이 PowerShell에서 바로 실행
 
-질문처럼 `bash` 실행 시 WSL 미설치 오류가 나면, 아래 PowerShell 스크립트를 사용하세요.
+질문처럼 `bash` 실행 시 WSL 미설치 오류가 나면, 아래 방법 중 하나를 사용하세요.
+
+### 방법 A) 이미 PowerShell 프롬프트 안에 있을 때 (가장 권장)
 
 ```powershell
-pwsh -File tools/sync_main_branch.ps1 -Source work -Push
+.\tools\sync_main_branch.ps1 -Source work -Push
 ```
 
-Windows PowerShell(5.x)에서는:
+> 실행 정책 오류가 나면 1회 허용:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\tools\sync_main_branch.ps1 -Source work -Push
+Set-ExecutionPolicy -Scope Process Bypass
+.\tools\sync_main_branch.ps1 -Source work -Push
+```
+
+### 방법 B) CMD/다른 셸에서 PowerShell 스크립트 호출
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& '.\tools\sync_main_branch.ps1' -Source 'work' -Push"
+```
+
+### 방법 C) 배치 래퍼 사용(따옴표/인코딩 이슈 회피)
+
+```cmd
+tools\sync_main_branch.bat -Source work -Push
 ```
 
 - `-Push`를 빼면 로컬 `main`만 갱신

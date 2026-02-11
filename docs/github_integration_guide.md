@@ -96,3 +96,16 @@ PowerShell(WSL 없이):
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\tools\sync_main_branch.ps1 -Source work -Push
 ```
+
+
+PowerShell에서 `-File` 인수 파싱 오류가 나면 아래처럼 `-Command` + `&` 호출을 사용하세요.
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& '.\tools\sync_main_branch.ps1' -Source 'work' -Push"
+```
+
+또는 배치 래퍼:
+
+```cmd
+tools\sync_main_branch.bat -Source work -Push
+```
