@@ -58,3 +58,6 @@ Thumbs.db
 *.backup
 *_backup.*
 patch_*.py
+
+project_stock/
+
