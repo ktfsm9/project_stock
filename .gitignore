@@ -1,0 +1,6 @@
+# Local nested copy that can appear during manual merges
+project_stock/
+
+# Python cache
+__pycache__/
+*/__pycache__/
