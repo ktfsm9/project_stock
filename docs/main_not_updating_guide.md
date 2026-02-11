@@ -199,3 +199,6 @@ python .\tools\validate_pipeline_log.py $log.FullName
 
 
 > 참고: 현재가 `main`이고 병합할 브랜치가 없으면 스크립트는 `Source branch resolved to 'main'. Nothing to merge.`를 출력하고 정상 종료합니다( `-Push` 사용 시 origin/main 동기화만 확인).
+
+
+> 브랜치명을 잘못 입력해도(예: codex/...-9u5lq1) 스크립트가 `git fetch --prune` 후 유사한 브랜치 1개를 찾으면 자동 보정합니다. 여러 후보면 최근 브랜치 목록을 보여주고 종료합니다.
