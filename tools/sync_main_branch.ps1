@@ -52,7 +52,16 @@ if ([string]::IsNullOrWhiteSpace($Source)) {
 }
 
 if ($Source -eq 'main') {
-    throw "Source branch is 'main'. Use a feature branch (e.g., codex/...) or omit -Source for auto-detection."
+    Write-Host "Source branch resolved to 'main'. Nothing to merge."
+    if ($Push) {
+        & git remote get-url origin *> $null
+        if ($LASTEXITCODE -ne 0) {
+            throw "Error: origin remote is not configured."
+        }
+        Run-Git -Args @('push', 'origin', 'main')
+        Write-Host "Verified push: origin/main (already up to date)."
+    }
+    exit 0
 }
 
 # Ensure clean working tree

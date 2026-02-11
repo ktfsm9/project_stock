@@ -128,3 +128,6 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& '.\tools\sync_main
 
 
 > `work` 브랜치가 없으면 `-Source work`를 쓰지 말고 자동 선택(`-Push`) 또는 실제 브랜치명을 지정하세요.
+
+
+> 참고: 현재가 `main`이고 병합할 브랜치가 없으면 스크립트는 `Source branch resolved to 'main'. Nothing to merge.`를 출력하고 정상 종료합니다( `-Push` 사용 시 origin/main 동기화만 확인).

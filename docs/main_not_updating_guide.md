@@ -196,3 +196,6 @@ python .\tools\validate_pipeline_log.py $log.FullName
 # 또는 실제 브랜치명을 명시
 .\sync_main.ps1 -Source "codex/verify-project-analysis-for-strategy-validation-c84ll1" -Push
 ```
+
+
+> 참고: 현재가 `main`이고 병합할 브랜치가 없으면 스크립트는 `Source branch resolved to 'main'. Nothing to merge.`를 출력하고 정상 종료합니다( `-Push` 사용 시 origin/main 동기화만 확인).
