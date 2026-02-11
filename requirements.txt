@@ -1,0 +1,24 @@
+# 주식 백테스팅 파이프라인 필수 패키지
+
+# 데이터 처리
+pandas>=1.5.0
+numpy>=1.24.0
+
+# 머신러닝
+scikit-learn>=1.3.0
+xgboost>=1.7.0
+
+# 시각화
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# 웹 크롤링
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+
+# 주가 데이터
+yfinance>=0.2.0
+
+# 통계
+scipy>=1.10.0
+statsmodels>=0.14.0
