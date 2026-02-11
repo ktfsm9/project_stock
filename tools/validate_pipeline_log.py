@@ -30,7 +30,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--strict",
         action="store_true",
-        help="Return non-zero if WARN exists (default: true behavior kept)",
+        help="Exit non-zero when WARN exists (default behavior)",
+    )
+    parser.add_argument(
+        "--lenient",
+        action="store_true",
+        help="Always exit 0 after printing report (for CI dry-run/report-only mode)",
+    )
+    parser.add_argument(
+        "--print-exit-code",
+        action="store_true",
+        help="Print numeric exit code at the end for shell portability checks",
     )
     return parser.parse_args()
 
@@ -44,8 +54,6 @@ def _collect_stage_status(text: str) -> dict[str, str]:
 
 
 def _extract_model_direction_accuracy(text: str) -> dict[str, float]:
-    # Parse tabular summary block lines like:
-    # Voting 0.999427 ... 0.000000
     acc: dict[str, float] = {}
     pattern = re.compile(r"^\s*([A-Za-z_]+)\s+[0-9.]+\s+[0-9.]+\s+[0-9.]+\s+([0-9.]+)\s*$")
     for line in text.splitlines():
@@ -59,7 +67,6 @@ def _extract_model_direction_accuracy(text: str) -> dict[str, float]:
 def collect_findings(text: str) -> list[Finding]:
     findings: list[Finding] = []
 
-    # 1) Stage consistency
     stage_map = _collect_stage_status(text)
     if not stage_map:
         findings.append(Finding("WARN", "stage", "단계 로그를 찾지 못했습니다. 로그 포맷을 확인하세요."))
@@ -68,7 +75,6 @@ def collect_findings(text: str) -> list[Finding]:
         failed = sum(1 for v in stage_map.values() if v == "실패")
         findings.append(Finding("INFO", "stage", f"단계 파싱 결과: 완료 {completed}개, 실패 {failed}개"))
 
-    # 2) Dependency fallback
     fallback = "No module named 'yfinance'" in text or "샘플 데이터 사용하여 계속 진행" in text
     if fallback:
         findings.append(
@@ -88,7 +94,6 @@ def collect_findings(text: str) -> list[Finding]:
             )
         )
 
-    # 3) Modeling risk
     r2_matches = re.findall(r"R² Score:\s*([0-9.]+)", text)
     high_r2 = [float(v) for v in r2_matches if float(v) >= 0.999]
     if high_r2:
@@ -111,7 +116,6 @@ def collect_findings(text: str) -> list[Finding]:
             )
         )
 
-    # 4) Correlation/multicollinearity hint
     high_corr_count_match = re.search(r"높은 상관관계 찾기 \(\|r\| > 0\.7\).*?발견:\s*(\d+)개", text, re.S)
     if high_corr_count_match:
         cnt = int(high_corr_count_match.group(1))
@@ -126,7 +130,6 @@ def collect_findings(text: str) -> list[Finding]:
         else:
             findings.append(Finding("INFO", "feature", f"고상관 쌍 개수: {cnt}개"))
 
-    # 5) Scope keyword alignment
     required_keywords = ["주지표", "보조지표", "거시", "분기", "연간"]
     missing = [k for k in required_keywords if k not in text]
     if missing:
@@ -140,7 +143,6 @@ def collect_findings(text: str) -> list[Finding]:
     else:
         findings.append(Finding("INFO", "scope", "프로젝트 범위 키워드 확인 완료"))
 
-    # 6) Backtest reporting completeness
     if "Annual_Return" in text:
         findings.append(Finding("INFO", "backtest", "연간 수익률 컬럼(Annual_Return) 확인"))
     else:
@@ -167,6 +169,12 @@ def print_report(findings: list[Finding]) -> None:
         print("판정: REVIEW_NEEDED")
 
 
+def compute_exit_code(warn_count: int, lenient: bool) -> int:
+    if lenient:
+        return 0
+    return 0 if warn_count == 0 else 2
+
+
 def main() -> int:
     args = parse_args()
     log_text = args.log_path.read_text(encoding="utf-8")
@@ -174,10 +182,10 @@ def main() -> int:
     print_report(findings)
 
     warn_count = sum(1 for f in findings if f.level == "WARN")
-    if warn_count == 0:
-        return 0
-    # keep previous behavior: non-zero when warnings exist
-    return 2
+    exit_code = compute_exit_code(warn_count=warn_count, lenient=args.lenient)
+    if args.print_exit_code:
+        print(f"EXIT_CODE: {exit_code}")
+    return exit_code
 
 
 if __name__ == "__main__":
