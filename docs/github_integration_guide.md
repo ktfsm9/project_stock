@@ -109,3 +109,19 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& '.\tools\sync_main
 ```cmd
 tools\sync_main_branch.bat -Source work -Push
 ```
+
+
+
+### PowerShell에서 `tools\...`가 안 잡힐 때
+
+반드시 `./`를 붙이세요.
+
+```powershell
+.\tools\sync_main_branch.bat -Source work -Push
+```
+
+더 단순하게는 repo 루트 래퍼 사용:
+
+```powershell
+.\sync_main.ps1 -Source work -Push
+```

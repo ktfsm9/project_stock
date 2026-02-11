@@ -102,3 +102,43 @@ tools\sync_main_branch.bat -Source work -Push
 
 - `-Push`를 빼면 로컬 `main`만 갱신
 - `-Source` 생략 시 현재 브랜치를 source로 사용
+
+
+
+## `CommandNotFound`(스크립트 못 찾음) 오류 해결
+
+질문에 나온 아래 오류는 대부분 **현재 위치(cwd)가 스크립트가 있는 repo 루트가 아닐 때** 발생합니다.
+
+- `'.\tools\sync_main_branch.ps1' ... 인식되지 않습니다`
+- `'tools\sync_main_branch.bat' ... 모듈을 로드할 수 없습니다`
+
+### 1) 현재 위치 확인
+
+```powershell
+Get-Location
+Get-ChildItem
+```
+
+`tools` 폴더가 안 보이면 한 단계 아래 repo로 이동하세요(예: `cd .\project_stock`).
+
+### 2) PowerShell에서는 경로 앞에 `./` 또는 `.\` 필수
+
+```powershell
+.\tools\sync_main_branch.bat -Source work -Push
+```
+
+> `tools\...`만 입력하면 PowerShell이 모듈 이름으로 해석할 수 있습니다.
+
+### 3) 루트 래퍼(신규) 사용 — 가장 간단
+
+repo 루트에서 아래처럼 실행하면 내부적으로 `tools/sync_main_branch.ps1`를 호출합니다.
+
+```powershell
+.\sync_main.ps1 -Source work -Push
+```
+
+또는
+
+```cmd
+.\sync_main.bat -Source work -Push
+```
