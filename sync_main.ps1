@@ -4,10 +4,24 @@ param(
 )
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$target = Join-Path $scriptDir "tools/sync_main_branch.ps1"
+$candidates = @(
+    (Join-Path $scriptDir "tools/sync_main_branch.ps1"),
+    (Join-Path $scriptDir "project_stock/tools/sync_main_branch.ps1")
+)
 
-if (-not (Test-Path $target)) {
-    throw "sync script not found: $target"
+$target = $null
+foreach ($candidate in $candidates) {
+    if (Test-Path $candidate) {
+        $target = $candidate
+        break
+    }
+}
+
+if (-not $target) {
+    Write-Error "sync script not found. tried:"
+    $candidates | ForEach-Object { Write-Error " - $_" }
+    Write-Error "hint: run this from your git repo root."
+    exit 1
 }
 
 & $target -Source $Source -Push:$Push

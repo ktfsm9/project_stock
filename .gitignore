@@ -60,4 +60,6 @@ Thumbs.db
 patch_*.py
 
 project_stock/
-
+/data/
+/logs/
+/models/

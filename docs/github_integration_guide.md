@@ -85,7 +85,7 @@ git branch -vv
 작업 브랜치에서 PR만 열어두면 `main`은 자동으로 갱신되지 않습니다(merge 필요).
 
 ```bash
-bash tools/sync_main_branch.sh --source work --push
+bash tools/sync_main_branch.sh --source <branch> --push
 ```
 
 또는 GitHub PR 화면에서 `Merge pull request`를 직접 수행하세요.
@@ -94,20 +94,20 @@ bash tools/sync_main_branch.sh --source work --push
 PowerShell(WSL 없이):
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\tools\sync_main_branch.ps1 -Source work -Push
+powershell -ExecutionPolicy Bypass -File .\tools\sync_main_branch.ps1 -Push
 ```
 
 
 PowerShell에서 `-File` 인수 파싱 오류가 나면 아래처럼 `-Command` + `&` 호출을 사용하세요.
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& '.\tools\sync_main_branch.ps1' -Source 'work' -Push"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& '.\tools\sync_main_branch.ps1' -Push"
 ```
 
 또는 배치 래퍼:
 
 ```cmd
-tools\sync_main_branch.bat -Source work -Push
+.\tools\sync_main_branch.bat -Push
 ```
 
 
@@ -117,11 +117,20 @@ tools\sync_main_branch.bat -Source work -Push
 반드시 `./`를 붙이세요.
 
 ```powershell
-.\tools\sync_main_branch.bat -Source work -Push
+.\tools\sync_main_branch.bat -Push
 ```
 
 더 단순하게는 repo 루트 래퍼 사용:
 
 ```powershell
-.\sync_main.ps1 -Source work -Push
+.\sync_main.ps1 -Push
 ```
+
+
+> `work` 브랜치가 없으면 `-Source work`를 쓰지 말고 자동 선택(`-Push`) 또는 실제 브랜치명을 지정하세요.
+
+
+> 참고: 현재가 `main`이고 병합할 브랜치가 없으면 스크립트는 `Source branch resolved to 'main'. Nothing to merge.`를 출력하고 정상 종료합니다( `-Push` 사용 시 origin/main 동기화만 확인).
+
+
+> 브랜치명을 잘못 입력해도(예: codex/...-9u5lq1) 스크립트가 `git fetch --prune` 후 유사한 브랜치 1개를 찾으면 자동 보정합니다. 여러 후보면 최근 브랜치 목록을 보여주고 종료합니다.

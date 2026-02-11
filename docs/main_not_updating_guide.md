@@ -47,7 +47,7 @@ git push origin main
 현재 브랜치를 `main`에 fast-forward하고, 필요 시 push:
 
 ```bash
-bash tools/sync_main_branch.sh --source work --push
+bash tools/sync_main_branch.sh --source <branch> --push
 ```
 
 - `--push`를 빼면 로컬 `main`만 업데이트
@@ -78,30 +78,30 @@ git remote -v
 ### 방법 A) 이미 PowerShell 프롬프트 안에 있을 때 (가장 권장)
 
 ```powershell
-.\tools\sync_main_branch.ps1 -Source work -Push
+.\tools\sync_main_branch.ps1 -Push
 ```
 
 > 실행 정책 오류가 나면 1회 허용:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
-.\tools\sync_main_branch.ps1 -Source work -Push
+.\tools\sync_main_branch.ps1 -Push
 ```
 
 ### 방법 B) CMD/다른 셸에서 PowerShell 스크립트 호출
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& '.\tools\sync_main_branch.ps1' -Source 'work' -Push"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& '.\tools\sync_main_branch.ps1' -Push"
 ```
 
 ### 방법 C) 배치 래퍼 사용(따옴표/인코딩 이슈 회피)
 
 ```cmd
-tools\sync_main_branch.bat -Source work -Push
+tools\sync_main_branch.bat -Push
 ```
 
 - `-Push`를 빼면 로컬 `main`만 갱신
-- `-Source` 생략 시 현재 브랜치를 source로 사용
+- `-Source` 생략 시 현재 브랜치(또는 최근 codex/* 브랜치)를 자동 선택
 
 
 
@@ -124,7 +124,7 @@ Get-ChildItem
 ### 2) PowerShell에서는 경로 앞에 `./` 또는 `.\` 필수
 
 ```powershell
-.\tools\sync_main_branch.bat -Source work -Push
+.\tools\sync_main_branch.bat -Push
 ```
 
 > `tools\...`만 입력하면 PowerShell이 모듈 이름으로 해석할 수 있습니다.
@@ -134,11 +134,71 @@ Get-ChildItem
 repo 루트에서 아래처럼 실행하면 내부적으로 `tools/sync_main_branch.ps1`를 호출합니다.
 
 ```powershell
-.\sync_main.ps1 -Source work -Push
+.\sync_main.ps1 -Push
 ```
 
 또는
 
 ```cmd
-.\sync_main.bat -Source work -Push
+.\sync_main.bat -Push
 ```
+
+## 실제 오류 패턴 기준 즉시 해결 명령
+
+### 1) `... 용어가 인식되지 않습니다` (스크립트 미발견)
+아래 순서 그대로 실행:
+
+```powershell
+git rev-parse --show-toplevel
+Set-Location (git rev-parse --show-toplevel)
+Get-ChildItem .\tools
+```
+
+그 다음 실행(반드시 `./` 또는 `.\` 포함):
+
+```powershell
+.\tools\sync_main_branch.ps1 -Push
+# 또는
+.\tools\sync_main_branch.bat -Push
+# 또는 루트 래퍼
+.\sync_main.ps1 -Push
+```
+
+### 2) `-File 매개 변수에 대한 인수 ... 없습니다`
+`-File` 대신 아래 형식을 사용:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& '.\tools\sync_main_branch.ps1' -Push"
+```
+
+### 3) 최신 로그 파일 자동 선택 후 검증
+
+```powershell
+$log = Get-ChildItem .\logs -File | Where-Object { $_.Name -match '\.(log|txt)$' } |
+       Sort-Object LastWriteTime -Descending | Select-Object -First 1
+python .\tools\validate_pipeline_log.py $log.FullName
+```
+
+### 4) 프롬프트/출력 텍스트를 다시 붙여넣지 않기
+아래 같은 줄은 **명령이 아니라 출력**입니다. 다시 입력하면 파서 오류가 납니다.
+- `(base) PS C:\...>`
+- `=== 파이프라인 로그 검증 결과 ===`
+- `[INFO] ...` / `[WARN] ...`
+
+
+### 5) `Error: source branch 'work' does not exist`
+`work` 브랜치가 실제로 없을 때 발생합니다. 아래 둘 중 하나로 해결하세요.
+
+```powershell
+# 자동 선택 사용(권장)
+.\sync_main.ps1 -Push
+
+# 또는 실제 브랜치명을 명시
+.\sync_main.ps1 -Source "codex/verify-project-analysis-for-strategy-validation-c84ll1" -Push
+```
+
+
+> 참고: 현재가 `main`이고 병합할 브랜치가 없으면 스크립트는 `Source branch resolved to 'main'. Nothing to merge.`를 출력하고 정상 종료합니다( `-Push` 사용 시 origin/main 동기화만 확인).
+
+
+> 브랜치명을 잘못 입력해도(예: codex/...-9u5lq1) 스크립트가 `git fetch --prune` 후 유사한 브랜치 1개를 찾으면 자동 보정합니다. 여러 후보면 최근 브랜치 목록을 보여주고 종료합니다.
